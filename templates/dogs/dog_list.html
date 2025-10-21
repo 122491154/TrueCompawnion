@@ -1,0 +1,18 @@
+<h1>Available Dogs</h1>
+<a href="{% url 'add_dog' %}">Add a New Dog</a>
+
+<ul>
+    {% for dog in dogs %}
+       <li>
+    {% if dog.image %}
+        <img src="{{ dog.image.url }}" alt="{{ dog.name }}" width="150" style="vertical-align: middle; margin-right: 10px;">
+    {% endif %}
+    <strong>{{ dog.name }}</strong> ({{ dog.breed }}) — {{ dog.age }} years old
+    <a href="{% url 'edit_dog' dog.id %}" style="margin-left: 10px;">Edit</a>
+    <a href="{% url 'delete_dog' dog.id %}" style="color: red;">Delete</a>
+</li>
+
+    {% empty %}
+        <li>No dogs found.</li>
+    {% endfor %}
+</ul>
