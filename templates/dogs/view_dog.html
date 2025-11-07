@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ dog.name }} — Admin</title>
+  <style>
+    body { font-family: system-ui, Arial; background:#fafafa; padding:24px; }
+    .btn { display:inline-block; padding:8px 12px; border:1px solid #ddd; border-radius:8px; background:#fff; color:#111; text-decoration:none; }
+    .btn:hover { background:#eee; }
+    .wrap { display:grid; grid-template-columns: 320px 1fr; gap:20px; align-items:start; }
+    @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
+    img { width:100%; height:auto; border:1px solid #eee; border-radius:10px; }
+    dl { background:#fff; border:1px solid #e5e5e5; border-radius:10px; padding:16px; }
+    dt { font-weight:700; margin-top:10px; }
+    dd { margin:4px 0 10px; }
+  </style>
+</head>
+<body>
+  <a href="{% url 'home' %}" class="btn">← Back to Admin Home</a>
+  <h1 style="margin-top:12px">{{ dog.name }}</h1>
+
+  <div class="wrap">
+    <div>
+      {% if dog.image %}<img src="{{ dog.image.url }}" alt="{{ dog.name }}">{% endif %}
+    </div>
+    <div>
+      <dl>
+        <dt>Breed</dt><dd>{{ dog.breed }}</dd>
+        <dt>Age</dt><dd>{{ dog.age }}</dd>
+        <dt>Location</dt><dd>{{ dog.location }}</dd>
+        <dt>Activity level</dt><dd>{{ dog.activity_level|default:"—" }}</dd>
+        <dt>Training difficulty</dt><dd>{{ dog.training_difficulty|default:"—" }}</dd>
+        <dt>Coat & grooming</dt><dd>{{ dog.coat_grooming|default:"—" }}</dd>
+        <dt>Weight (kg)</dt><dd>{{ dog.weight_kg|default:"—" }}</dd>
+        <dt>Height (cm)</dt><dd>{{ dog.height_cm|default:"—" }}</dd>
+        <dt>Adopted</dt><dd>{{ dog.adopted|yesno:"Yes,No" }}</dd>
+        {% if dog.description %}
+          <dt>Description</dt><dd>{{ dog.description }}</dd>
+        {% endif %}
+      </dl>
+      <p>
+        <a href="{% url 'edit_dog' dog.pk %}" class="btn">Edit</a>
+        <a href="{% url 'delete_dog' dog.pk %}" class="btn">Delete</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ dog.name|default:"Dog" }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --muted:#666; --border:#ddd; }
+    body { font-family: system-ui, Arial, sans-serif; margin:0; padding:24px; background:#fafafa; }
+    a { text-decoration:none; }
+    .wrap { display:grid; grid-template-columns: 1fr 1fr; gap:24px; align-items:start; }
+    .img { width:100%; height:360px; object-fit:cover; border-radius:12px; background:#f0f0f0; display:block; }
+    .pill { display:inline-block; padding:4px 8px; border:1px solid var(--border); border-radius:999px; background:#fff; font-size:12px; color:#333; margin-right:6px; margin-bottom:6px; }
+    .muted { color: var(--muted); }
+    .back-btn { display:inline-block; background:#fff; color:#111; border:1px solid var(--border); padding:8px 14px; border-radius:8px; margin-bottom:20px; }
+    .back-btn:hover { background:#eee; }
+    @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <a href="{% url 'client_home' %}" class="back-btn">← Back to all dogs</a>
+
+  <div class="wrap">
+    {% if dog.image %}
+      <img class="img" src="{{ dog.image.url }}" alt="{{ dog.name|default:'Dog' }}">
+    {% else %}
+      <img class="img" src="https://placehold.co/1000x700?text=No+Image" alt="">
+    {% endif %}
+
+    <div>
+      <h1 style="margin-top:0">{{ dog.name|default:"Unnamed" }}</h1>
+      <div style="margin:8px 0 12px;">
+        {% if dog.breed %}<span class="pill">{{ dog.breed }}</span>{% endif %}
+        {% if dog.location %}<span class="pill">{{ dog.location }}</span>{% endif %}
+        {% if dog.age %}<span class="pill">{{ dog.age }} yrs</span>{% endif %}
+        {% if dog.weight_kg %}<span class="pill">{{ dog.weight_kg }} kg</span>{% endif %}
+        {% if dog.height_cm %}<span class="pill">{{ dog.height_cm }} cm</span>{% endif %}
+        {% if dog.activity_level %}<span class="pill">{{ dog.activity_level }} activity</span>{% endif %}
+        {% if dog.training_difficulty %}<span class="pill">{{ dog.training_difficulty }}</span>{% endif %}
+        {% if dog.coat_grooming %}<span class="pill">{{ dog.coat_grooming }} grooming</span>{% endif %}
+        {% if dog.adopted %}<span class="pill">Adopted</span>{% endif %}
+        {% if dog.microchip_number %}<span class="pill">Microchip: {{ dog.microchip_number }}</span>{% endif %}
+      </div>
+
+      {% if dog.description %}
+        <p class="muted">{{ dog.description }}</p>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>

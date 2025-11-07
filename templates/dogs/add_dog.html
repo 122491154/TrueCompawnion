@@ -1,22 +1,111 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Add Dog</title>
+  <meta charset="UTF-8" />
+  <title>Add New Dog</title>
+  <style>
+    body { font-family: system-ui, Arial; background:#fafafa; padding:24px; }
+    form { max-width:520px; background:#fff; padding:16px; border:1px solid #ddd; border-radius:10px; }
+    label { font-weight:600; display:block; margin-top:10px; }
+    input, textarea, select { width:100%; padding:8px; margin-top:6px; }
+    .row { display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    .actions { margin-top:16px; display:flex; gap:10px; }
+    .btn { padding:8px 12px; border:1px solid #ddd; border-radius:8px; background:#fff; }
+    small { color:#666; display:block; margin-top:4px; }
+  </style>
 </head>
 <body>
-    <h1>Add a New Dog</h1>
+  <a href="{% url 'home' %}" class="btn">← Back to Admin Home</a>
+  <h1>Add New Dog</h1>
 
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Add Dog</button>
-    </form>
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
 
-    {% if form.errors %}
-        <p style="color:red;">{{ form.errors }}</p>
-    {% endif %}
+    <label>Name</label>
+    <input type="text" name="name" required>
 
-    <a href="{% url 'dog_list' %}">Back to Dog List</a>
+    <div class="row">
+      <div>
+        <label>Breed</label>
+        <input type="text" name="breed">
+      </div>
+      <div>
+        <label>Age (years)</label>
+        <input type="number" name="age" min="0" step="1">
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Microchip Number</label>
+        <input type="text" name="microchip_number" maxlength="50" placeholder="e.g., 972000000000000">
+        <small>Optional — leave blank if unknown.</small>
+      </div>
+      <div>
+        <label>Location</label>
+        <input type="text" name="location">
+      </div>
+    </div>
+
+    <label>Description</label>
+    <textarea name="description" rows="3"></textarea>
+
+    <div class="row">
+      <div>
+        <label>Activity level</label>
+        <select name="activity_level">
+          <option value="">—</option>
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+      </div>
+      <div>
+        <label>Coat & grooming</label>
+        <select name="coat_grooming">
+          <option value="">—</option>
+          <option value="Low">Low</option>
+          <option value="Medium">Medium</option>
+          <option value="High">High</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Training difficulty</label>
+        <select name="training_difficulty">
+          <option value="">—</option>
+          <option value="Easy">Easy</option>
+          <option value="Moderate">Moderate</option>
+          <option value="Challenging">Challenging</option>
+        </select>
+      </div>
+      <div>
+        <label>Weight (kg)</label>
+        <input type="number" name="weight_kg" step="0.1" min="0">
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Height (cm)</label>
+        <input type="number" name="height_cm" step="0.1" min="0">
+      </div>
+      <div style="display:flex; align-items:end; gap:8px;">
+        <label style="margin:0;">
+          <input type="checkbox" name="adopted"> Adopted
+        </label>
+      </div>
+    </div>
+
+    <label>Photo</label>
+    <input type="file" name="image" accept="image/*">
+
+    <div class="actions">
+      <button type="submit" class="btn">Save</button>
+      <a href="{% url 'home' %}" class="btn">Cancel</a>
+    </div>
+  </form>
 </body>
 </html>

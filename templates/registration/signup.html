@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Create an account</title>
+  <style>
+    body { font-family: Arial, sans-serif; background:#fafafa; padding:40px; }
+    .box { max-width:360px; margin:auto; background:#fff; padding:20px; border:1px solid #ddd; border-radius:8px; }
+    input, button { width:100%; padding:8px; margin-bottom:10px; }
+    .err { color:#b00020; margin-bottom:10px; }
+    .link { text-align:center; margin-top:8px; }
+    a { text-decoration:none; }
+    .btn { display:inline-block; padding:8px 12px; border:1px solid #ddd; border-radius:8px; background:#fff; color:#111; }
+    .btn:hover { background:#eee; }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h2 style="margin-top:0;">Create an account</h2>
+
+    {% if form.errors %}
+      <div class="err">Please fix the errors below.</div>
+    {% endif %}
+
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Sign up</button>
+    </form>
+
+    <div class="link">
+      Already have an account?
+      <a class="btn" href="{% url 'login' %}">Log in</a>
+    </div>
+  </div>
+</body>
+</html>

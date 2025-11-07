@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Adoptable Dogs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --border:#e9e9e9; --muted:#666; }
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, Arial, sans-serif; margin:0; padding:24px; background:#fafafa; }
+    .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+    .btn { display:inline-block; padding:8px 12px; border:1px solid var(--border); border-radius:8px; background:#fff; color:#111; text-decoration:none; }
+    .btn:hover { background:#eee; }
+
+    .layout { display:grid; grid-template-columns: 280px 1fr; gap:20px; align-items:start; }
+    @media (max-width: 960px) { .layout { grid-template-columns: 1fr; } }
+
+    aside { background:#fff; border:1px solid var(--border); border-radius:12px; padding:14px; }
+    aside h2 { font-size:16px; margin:0 0 10px; }
+    aside .field { margin-bottom:10px; }
+    aside label { display:block; font-size:13px; color:#333; margin-bottom:4px; }
+    aside input, aside select { width:100%; padding:8px; border:1px solid var(--border); border-radius:8px; }
+    aside .inline { display:grid; grid-template-columns: 1fr 1fr; gap:8px; }
+    aside .actions { display:flex; gap:8px; margin-top:8px; }
+    aside .muted { color:var(--muted); font-size:12px; }
+
+    .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap:16px; }
+    .card { border:1px solid var(--border); border-radius:12px; overflow:hidden; background:#fff; }
+    .thumb { width:100%; height:180px; object-fit:cover; background:#f0f0f0; display:block; }
+    .content { padding:12px; }
+    .name { font-weight:700; margin:0 0 6px; font-size:16px; }
+
+    /* ✅ Vertical layout for meta info */
+    .meta {
+      color:var(--muted);
+      margin:0 0 10px 0;
+      font-size:13px;
+      display:flex;
+      flex-direction:column;   /* stack each pill vertically */
+      gap:6px;                 /* small space between lines */
+    }
+    .pill {
+      display:inline-block;
+      padding:4px 8px;
+      border:1px solid var(--border);
+      border-radius:8px;
+      background:#fff;
+      font-size:13px;
+      color:#333;
+      width:fit-content;
+    }
+
+    .view { text-decoration:none; border:1px solid #222; padding:8px 10px; border-radius:8px; display:inline-block; background:#fff; }
+
+    nav.pagination { margin-top:22px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .pagination a { text-decoration:none; border:1px solid var(--border); padding:6px 10px; border-radius:6px; background:#fff; }
+    .current { font-weight:700; }
+  </style>
+</head>
+<body>
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <a href="{% url 'client_home' %}" class="btn">Home</a>
+    <div>
+      {% if user.is_authenticated %}
+        <a href="{% url 'home' %}" class="btn" style="margin-right:8px;">Admin</a>
+        <form action="{% url 'logout' %}" method="post" style="display:inline;">
+          {% csrf_token %}
+          <button type="submit" class="btn">Logout</button>
+        </form>
+      {% else %}
+        <a href="{% url 'login' %}" class="btn" style="margin-right:8px;">Login</a>
+        <a href="{% url 'signup' %}" class="btn">Sign up</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- Sidebar filters -->
+    <aside>
+      <h2>Filters</h2>
+      <form method="get">
+        <div class="field">
+          <label for="q">Search by name</label>
+          <input id="q" type="text" name="q" value="{{ filters.q }}">
+        </div>
+
+        <div class="field">
+          <label for="breed">Breed</label>
+          <input id="breed" type="text" name="breed" value="{{ filters.breed }}">
+        </div>
+
+        <div class="field">
+          <label for="activity">Activity level</label>
+          <select id="activity" name="activity">
+            <option value="">Any</option>
+            <option value="Low" {% if filters.activity == "Low" %}selected{% endif %}>Low</option>
+            <option value="Medium" {% if filters.activity == "Medium" %}selected{% endif %}>Medium</option>
+            <option value="High" {% if filters.activity == "High" %}selected{% endif %}>High</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="location">Location</label>
+          <input id="location" type="text" name="location" value="{{ filters.location }}">
+        </div>
+
+        <div class="field">
+          <label for="coat">Coat & grooming</label>
+          <select id="coat" name="coat">
+            <option value="">Any</option>
+            <option value="Low" {% if filters.coat == "Low" %}selected{% endif %}>Low</option>
+            <option value="Medium" {% if filters.coat == "Medium" %}selected{% endif %}>Medium</option>
+            <option value="High" {% if filters.coat == "High" %}selected{% endif %}>High</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="training">Training difficulty</label>
+          <select id="training" name="training">
+            <option value="">Any</option>
+            <option value="Easy" {% if filters.training == "Easy" %}selected{% endif %}>Easy</option>
+            <option value="Moderate" {% if filters.training == "Moderate" %}selected{% endif %}>Moderate</option>
+            <option value="Challenging" {% if filters.training == "Challenging" %}selected{% endif %}>Challenging</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Age (years)</label>
+          <div class="inline">
+            <input type="number" name="age_min" step="1" min="0" placeholder="Min" value="{{ filters.age_min }}">
+            <input type="number" name="age_max" step="1" min="0" placeholder="Max" value="{{ filters.age_max }}">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Weight (kg)</label>
+          <div class="inline">
+            <input type="number" name="weight_min" step="0.1" min="0" placeholder="Min" value="{{ filters.weight_min }}">
+            <input type="number" name="weight_max" step="0.1" min="0" placeholder="Max" value="{{ filters.weight_max }}">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Height (cm)</label>
+          <div class="inline">
+            <input type="number" name="height_min" step="0.1" min="0" placeholder="Min" value="{{ filters.height_min }}">
+            <input type="number" name="height_max" step="0.1" min="0" placeholder="Max" value="{{ filters.height_max }}">
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="btn">Apply</button>
+          <a href="{% url 'client_home' %}" class="btn">Clear</a>
+        </div>
+      </form>
+    </aside>
+
+    <!-- Results grid -->
+    <main>
+      <header style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+        <h1 style="font-size:22px; margin:0;">Adoptable Dogs</h1>
+      </header>
+
+      <section class="grid">
+        {% for dog in dogs %}
+          <article class="card">
+            {% if dog.image %}
+              <img class="thumb" src="{{ dog.image.url }}" alt="{{ dog.name|default:'Dog' }}">
+            {% else %}
+              <img class="thumb" src="https://placehold.co/800x600?text=No+Image" alt="">
+            {% endif %}
+            <div class="content">
+              <h3 class="name">{{ dog.name|default:"Unnamed" }}</h3>
+              <div class="meta">
+                {% if dog.breed %}<span class="pill">{{ dog.breed }}</span>{% endif %}
+                {% if dog.location %}<span class="pill">{{ dog.location }}</span>{% endif %}
+                {% if dog.activity_level %}<span class="pill">{{ dog.activity_level }} activity</span>{% endif %}
+                {% if dog.training_difficulty %}<span class="pill">{{ dog.training_difficulty }}</span>{% endif %}
+                {% if dog.weight_kg %}<span class="pill">{{ dog.weight_kg }} kg</span>{% endif %}
+                {% if dog.height_cm %}<span class="pill">{{ dog.height_cm }} cm</span>{% endif %}
+                {% if dog.age %}<span class="pill">{{ dog.age }} yrs</span>{% endif %}
+              </div>
+              <a class="view" href="{% url 'client_dog_detail' dog.pk %}">View details</a>
+            </div>
+          </article>
+        {% empty %}
+          <p>No dogs found.</p>
+        {% endfor %}
+      </section>
+
+      {% if is_paginated %}
+        <nav class="pagination">
+          {% if page_obj.has_previous %}
+            <a href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.previous_page_number }}">« Prev</a>
+          {% endif %}
+          <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a href="?{% if query_string %}{{ query_string }}&{% endif %}page={{ page_obj.next_page_number }}">Next »</a>
+          {% endif %}
+        </nav>
+      {% endif %}
+    </main>
+  </div>
+</body>
+</html>

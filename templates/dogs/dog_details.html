@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ dog.name|default:"Dog" }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --muted:#666; }
+    body { font-family: system-ui, Arial, sans-serif; margin:0; padding:24px; background:#fafafa; }
+    a { text-decoration:none; }
+    .wrap { display:grid; grid-template-columns: 1fr 1fr; gap:24px; align-items:start; }
+    .img { width:100%; height:360px; object-fit:cover; border-radius:12px; background:#f0f0f0; display:block; }
+    .meta p { margin:6px 0; color:#111; }
+    .muted { color: var(--muted); }
+    @media (max-width: 900px) {
+      .wrap { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <p><a href="{% url 'client_home' %}">← Back to dogs</a></p>
+
+  <div class="wrap">
+    {% if dog.image %}
+      <img class="img" src="{{ dog.image.url }}" alt="{{ dog.name|default:'Dog' }}">
+    {% else %}
+      <img class="img" src="https://placehold.co/1000x700?text=No+Image" alt="">
+    {% endif %}
+    <div class="meta">
+      <h1>{{ dog.name|default:"Unnamed" }}</h1>
+      {% if dog.breed %}<p><strong>Breed:</strong> {{ dog.breed }}</p>{% endif %}
+      {% if dog.age %}<p><strong>Age:</strong> {{ dog.age }}</p>{% endif %}
+      {% if dog.gender %}<p><strong>Gender:</strong> {{ dog.gender }}</p>{% endif %}
+      {% if dog.description %}<p class="muted">{{ dog.description }}</p>{% endif %}
+    </div>
+  </div>
+</body>
+</html>
