@@ -2,50 +2,384 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>{{ dog.name|default:"Dog" }}</title>
+  <title>{{ dog.name }} – Dog details</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root { --muted:#666; --border:#ddd; }
-    body { font-family: system-ui, Arial, sans-serif; margin:0; padding:24px; background:#fafafa; }
-    a { text-decoration:none; }
-    .wrap { display:grid; grid-template-columns: 1fr 1fr; gap:24px; align-items:start; }
-    .img { width:100%; height:360px; object-fit:cover; border-radius:12px; background:#f0f0f0; display:block; }
-    .pill { display:inline-block; padding:4px 8px; border:1px solid var(--border); border-radius:999px; background:#fff; font-size:12px; color:#333; margin-right:6px; margin-bottom:6px; }
-    .muted { color: var(--muted); }
-    .back-btn { display:inline-block; background:#fff; color:#111; border:1px solid var(--border); padding:8px 14px; border-radius:8px; margin-bottom:20px; }
-    .back-btn:hover { background:#eee; }
-    @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
+    :root { --border:#e9e9e9; --muted:#666; --bg:#fafafa; }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      padding:24px;
+      font-family:system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:var(--bg);
+    }
+    a { text-decoration:none; color:inherit; }
+
+    .btn {
+      display:inline-block;
+      padding:8px 12px;
+      border-radius:8px;
+      border:1px solid var(--border);
+      background:#fff;
+      font-size:14px;
+      cursor:pointer;
+    }
+    .btn:hover { background:#eee; }
+
+    .back-row { margin-bottom:16px; }
+
+    .layout {
+      display:flex;
+      gap:32px;
+      align-items:flex-start;
+      max-width:1100px;
+      margin:0 auto;
+    }
+    @media (max-width:900px) {
+      .layout { flex-direction:column; }
+    }
+
+    .img-wrap {
+      max-width:600px;
+      width:100%;
+      border-radius:16px;
+      overflow:hidden;
+      border:1px solid var(--border);
+      background:#eee;
+      flex-shrink:0;
+      position:relative; /* ✅ needed for arrows/dots */
+    }
+
+    /* keep your original default for normal single image pages */
+    .img-wrap img {
+      display:block;
+      width:100%;
+      height:auto;
+    }
+
+    /* ✅ IMPORTANT: override for gallery images */
+    .img-wrap img.gimg { display:none; }
+    .img-wrap img.gimg.active { display:block; }
+
+    .details {
+      flex:1;
+      min-width:0;
+    }
+    .title {
+      font-size:32px;
+      font-weight:700;
+      margin:0 0 4px;
+    }
+    .subtitle {
+      margin:0 0 16px;
+      color:var(--muted);
+      font-size:15px;
+    }
+    .pills {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:16px;
+    }
+    .pill {
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      font-size:13px;
+      background:#fff;
+    }
+    .description {
+      margin-top:8px;
+      font-size:14px;
+      line-height:1.5;
+    }
+    .actions {
+      margin-top:16px;
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .panel {
+      margin-top:16px;
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:12px;
+      padding:14px;
+    }
+    .panel h3 { margin:0 0 10px; font-size:16px; }
+    textarea {
+      width:100%;
+      max-width:520px;
+      min-height:90px;
+      padding:10px;
+      border:1px solid var(--border);
+      border-radius:10px;
+      font-family:inherit;
+      font-size:14px;
+    }
+    .small { font-size:13px; color:var(--muted); }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .req { padding:10px; border:1px solid var(--border); border-radius:10px; margin-top:10px; background:#fafafa; }
+    .tag { display:inline-block; padding:3px 8px; border:1px solid var(--border); border-radius:999px; font-size:12px; background:#fff; }
+
+    /* --- Gallery UI --- */
+    .gbtn {
+      position:absolute;
+      top:50%;
+      transform:translateY(-50%);
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:10px;
+      padding:8px 12px;
+      cursor:pointer;
+      font-size:18px;
+      opacity:0.9;
+      z-index:5;
+    }
+    .gbtn:hover { background:#eee; }
+    .gbtn-left { left:10px; }
+    .gbtn-right { right:10px; }
+
+    .g-dots {
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:10px;
+      display:flex;
+      justify-content:center;
+      gap:6px;
+      z-index:5;
+    }
+    .dot {
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      border:1px solid var(--border);
+      background:#fff;
+      cursor:pointer;
+      opacity:0.9;
+      padding:0;
+    }
+    .dot.active { background:#111; }
   </style>
 </head>
 <body>
-  <a href="{% url 'client_home' %}" class="back-btn">← Back to all dogs</a>
 
-  <div class="wrap">
-    {% if dog.image %}
-      <img class="img" src="{{ dog.image.url }}" alt="{{ dog.name|default:'Dog' }}">
-    {% else %}
-      <img class="img" src="https://placehold.co/1000x700?text=No+Image" alt="">
-    {% endif %}
+  <div class="back-row">
+    <a class="btn" href="{% url 'client_home' %}">← Back to all dogs</a>
+  </div>
 
-    <div>
-      <h1 style="margin-top:0">{{ dog.name|default:"Unnamed" }}</h1>
-      <div style="margin:8px 0 12px;">
-        {% if dog.breed %}<span class="pill">{{ dog.breed }}</span>{% endif %}
-        {% if dog.location %}<span class="pill">{{ dog.location }}</span>{% endif %}
-        {% if dog.age %}<span class="pill">{{ dog.age }} yrs</span>{% endif %}
-        {% if dog.weight_kg %}<span class="pill">{{ dog.weight_kg }} kg</span>{% endif %}
-        {% if dog.height_cm %}<span class="pill">{{ dog.height_cm }} cm</span>{% endif %}
+  <div class="layout">
+
+    <!-- ✅ LEFT: image/gallery -->
+    <div class="img-wrap">
+      {% if dog.image or extra_images %}
+        <button type="button" class="gbtn gbtn-left" onclick="prevImg()">‹</button>
+        <button type="button" class="gbtn gbtn-right" onclick="nextImg()">›</button>
+
+        {% if dog.image %}
+          <img class="gimg" src="{{ dog.image.url }}" alt="{{ dog.name }}">
+        {% endif %}
+
+        {% for img in extra_images %}
+          <img class="gimg" src="{{ img.image.url }}" alt="{{ dog.name }} photo {{ forloop.counter }}">
+        {% endfor %}
+
+        <div class="g-dots" id="gDots"></div>
+      {% else %}
+        <div style="width:100%;padding:40% 0;background:#ddd;"></div>
+      {% endif %}
+    </div>
+
+    <!-- ✅ RIGHT: details panel (unchanged) -->
+    <section class="details">
+      <h1 class="title">{{ dog.name|title }}</h1>
+      <p class="subtitle">
+        {{ dog.breed }} • {{ dog.age }} year{% if dog.age != 1 %}s{% endif %} • {{ dog.location }}
+      </p>
+
+      <div class="pills">
         {% if dog.activity_level %}<span class="pill">{{ dog.activity_level }} activity</span>{% endif %}
         {% if dog.training_difficulty %}<span class="pill">{{ dog.training_difficulty }}</span>{% endif %}
         {% if dog.coat_grooming %}<span class="pill">{{ dog.coat_grooming }} grooming</span>{% endif %}
-        {% if dog.adopted %}<span class="pill">Adopted</span>{% endif %}
-        {% if dog.microchip_number %}<span class="pill">Microchip: {{ dog.microchip_number }}</span>{% endif %}
+        {% if dog.weight_kg %}<span class="pill">{{ dog.weight_kg }} kg</span>{% endif %}
+        {% if dog.height_cm %}<span class="pill">{{ dog.height_cm }} cm</span>{% endif %}
+        {% if dog.microchip_number %}
+          <span class="pill">Microchip: {{ dog.microchip_number }}</span>
+        {% endif %}
+        {% if dog.status %}
+          <span class="pill">Status: {{ dog.get_status_display }}</span>
+        {% endif %}
       </div>
 
       {% if dog.description %}
-        <p class="muted">{{ dog.description }}</p>
+        <div class="description">
+          {{ dog.description }}
+        </div>
       {% endif %}
-    </div>
+
+      <div class="actions">
+        {% if user.is_authenticated %}
+          <form method="post"
+                action="{% if is_favourite %}{% url 'remove_from_favourites' dog.pk %}{% else %}{% url 'add_to_favourites' dog.pk %}{% endif %}">
+            {% csrf_token %}
+            <button type="submit" class="btn">
+              {% if is_favourite %}💔 Remove from favourites{% else %}❤️ Add to favourites{% endif %}
+            </button>
+          </form>
+        {% endif %}
+      </div>
+
+      <!-- ✅ Adoption section -->
+      {% if user.is_authenticated %}
+
+        {% if is_admin %}
+          <div class="panel">
+            <h3>Adoption requests (Admin)</h3>
+
+            {% if adoption_requests %}
+              {% for r in adoption_requests %}
+                <div class="req">
+                 <div class="row">
+                    <a href="{% url 'admin_view_profile' r.user.id %}">
+                    <strong>{{ r.user.username }}</strong>
+                    </a>
+                    <span class="tag">{{ r.status }}</span>
+                    <span class="small">Submitted: {{ r.created_at }}</span>
+                 </div>
+
+
+                  {% if r.message %}
+                    <div class="small" style="margin-top:6px;"><em>{{ r.message }}</em></div>
+                  {% endif %}
+
+                  {% if r.reviewed_by %}
+                    <div class="small" style="margin-top:6px;">
+                      Reviewed by: {{ r.reviewed_by.username }}
+                      {% if r.reviewed_at %} • {{ r.reviewed_at }}{% endif %}
+                    </div>
+                  {% endif %}
+
+                  {% if r.admin_note %}
+                    <div class="small" style="margin-top:6px;">Admin note: {{ r.admin_note }}</div>
+                  {% endif %}
+
+                  {% if r.status == "PENDING" %}
+                    <form method="post" action="{% url 'review_adoption_request' r.pk %}" style="margin-top:10px;">
+                      {% csrf_token %}
+                      <div class="small" style="margin-bottom:6px;">Optional admin note:</div>
+                      <textarea name="admin_note" placeholder="Write a note to keep on file (optional)"></textarea>
+                      <div class="row" style="margin-top:10px;">
+                        <button class="btn" type="submit" name="decision" value="accept">✅ Accept</button>
+                        <button class="btn" type="submit" name="decision" value="reject">❌ Reject</button>
+                      </div>
+                    </form>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            {% else %}
+              <p class="small">No adoption requests yet.</p>
+            {% endif %}
+          </div>
+
+        {% else %}
+          <div class="panel">
+            <h3>Request adoption</h3>
+
+            {% if dog.status == "ADOPTED" or dog.adopted %}
+              <p class="small">This dog is already adopted.</p>
+
+            {% elif my_adoption_request %}
+              <p class="small">
+                You have already requested adoption for this dog.
+                <br>
+                Current status: <strong>{{ my_adoption_request.status }}</strong>
+              </p>
+
+              {% if my_adoption_request.admin_note %}
+                <p class="small">Admin note: {{ my_adoption_request.admin_note }}</p>
+              {% endif %}
+
+              {% if my_adoption_request.status != "ACCEPTED" %}
+                <p class="small">You can resubmit your message (it will go back to Pending).</p>
+                <form method="post" action="{% url 'request_adoption' dog.pk %}">
+                  {% csrf_token %}
+                  <textarea name="message" placeholder="Update your message (optional)">{{ my_adoption_request.message }}</textarea>
+                  <div class="row" style="margin-top:10px;">
+                    <button class="btn" type="submit">Resubmit Request</button>
+                  </div>
+                </form>
+              {% endif %}
+
+            {% else %}
+              <form method="post" action="{% url 'request_adoption' dog.pk %}">
+                {% csrf_token %}
+                <textarea name="message" placeholder="Why are you a good match? (optional)"></textarea>
+                <div class="row" style="margin-top:10px;">
+                  <button class="btn" type="submit">Request Adoption</button>
+                </div>
+              </form>
+            {% endif %}
+          </div>
+        {% endif %}
+
+      {% else %}
+        <div class="panel">
+          <h3>Request adoption</h3>
+          <p class="small">Log in to request adoption.</p>
+        </div>
+      {% endif %}
+
+    </section>
   </div>
+
+  <script>
+    (function () {
+      const imgs = Array.from(document.querySelectorAll(".gimg"))
+        .filter(i => i.getAttribute("src"));
+
+      let idx = 0;
+
+      function show(i) {
+        if (!imgs.length) return;
+        idx = (i + imgs.length) % imgs.length;
+        imgs.forEach((img, k) => img.classList.toggle("active", k === idx));
+        renderDots();
+        toggleUI();
+      }
+
+      function toggleUI() {
+        const left = document.querySelector(".gbtn-left");
+        const right = document.querySelector(".gbtn-right");
+        const dots = document.getElementById("gDots");
+        const many = imgs.length > 1;
+
+        if (left) left.style.display = many ? "block" : "none";
+        if (right) right.style.display = many ? "block" : "none";
+        if (dots) dots.style.display = many ? "flex" : "none";
+      }
+
+      function renderDots() {
+        const dotsWrap = document.getElementById("gDots");
+        if (!dotsWrap) return;
+        dotsWrap.innerHTML = "";
+        imgs.forEach((_, k) => {
+          const d = document.createElement("button");
+          d.type = "button";
+          d.className = "dot" + (k === idx ? " active" : "");
+          d.onclick = () => show(k);
+          dotsWrap.appendChild(d);
+        });
+      }
+
+      window.nextImg = () => show(idx + 1);
+      window.prevImg = () => show(idx - 1);
+
+      show(0);
+    })();
+  </script>
+
 </body>
 </html>

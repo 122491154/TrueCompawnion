@@ -1,19 +1,31 @@
 from django.contrib import admin
-from .models import Dog
+from .models import Dog, DogImage
+
+
+class DogImageInline(admin.TabularInline):
+    model = DogImage
+    extra = 1
+
 
 @admin.register(Dog)
 class DogAdmin(admin.ModelAdmin):
     list_display = (
         "name", "breed", "age", "location",
-        "microchip_number",           # ← NEW
+        "microchip_number",
         "activity_level", "training_difficulty",
         "coat_grooming", "weight_kg", "height_cm",
         "adopted",
     )
+
     list_filter = (
         "adopted", "activity_level", "training_difficulty",
         "coat_grooming", "location", "breed",
     )
-    search_fields = ("name", "breed", "location", "description", "microchip_number")  # ← NEW
+
+    search_fields = (
+        "name", "breed", "location", "description", "microchip_number"
+    )
+
     ordering = ("name",)
 
+    inlines = [DogImageInline]

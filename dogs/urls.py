@@ -1,17 +1,36 @@
 from django.urls import path
 from . import views
-from .views import client_home, client_dog_detail, dog_photo_bytes
 
 urlpatterns = [
-    # 🐶 Public catalogue (default homepage)
-    path("", client_home, name="client_home"),  # now loads when users go to /
+    # Public / client-facing
+    path("", views.client_home, name="client_home"),
+    path("dogs/<int:pk>/", views.client_dog_detail, name="client_dog_detail"),
+    path("dogs/<int:pk>/photo/", views.dog_photo_bytes, name="dog_photo_bytes"),
 
-    # 🐾 Public dog detail pages
-    path("dogs/<int:pk>/", client_dog_detail, name="client_dog_detail"),
-    path("dogs/<int:pk>/photo/", dog_photo_bytes, name="dog_photo_bytes"),  # optional binary photo route
+    # NEW: adoption actions
+    path("dogs/<int:pk>/request-adoption/", views.request_adoption, name="request_adoption"),
+    path("adoptions/<int:request_id>/review/", views.review_adoption_request, name="review_adoption_request"),
+    path("profile/", views.profile, name="profile"),
 
-    # 👩‍💼 Internal/admin dashboard & actions
-    path("admin-home/", views.home, name="home"),  # admin dashboard
+
+    # Profile
+    path("profile/<int:user_id>/", views.admin_view_profile, name="admin_view_profile"),
+
+    # Favourites
+    path("favourites/", views.my_favourites, name="my_favourites"),
+    path(
+        "dogs/<int:pk>/favourite/",
+        views.add_to_favourites,
+        name="add_to_favourites",
+    ),
+    path(
+        "dogs/<int:pk>/unfavourite/",
+        views.remove_from_favourites,
+        name="remove_from_favourites",
+    ),
+
+    # Internal/admin dashboard & actions
+    path("admin-home/", views.home, name="home"),
     path("add/", views.add_dog, name="add_dog"),
     path("edit/<int:pk>/", views.edit_dog, name="edit_dog"),
     path("delete/<int:pk>/", views.delete_dog, name="delete_dog"),

@@ -2,47 +2,169 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>{{ dog.name }} — Admin</title>
+  <title>Dog Details</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    body { font-family: system-ui, Arial; background:#fafafa; padding:24px; }
-    .btn { display:inline-block; padding:8px 12px; border:1px solid #ddd; border-radius:8px; background:#fff; color:#111; text-decoration:none; }
+    :root { --border:#e9e9e9; --muted:#666; }
+    * { box-sizing:border-box; }
+    body { font-family:system-ui, Arial, sans-serif; margin:0; padding:24px; background:#fafafa; }
+    a { text-decoration:none; color:inherit; }
+
+    header { display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; }
+    header h1 { margin:0; font-size:24px; }
+    .btn { display:inline-block; padding:8px 12px; border:1px solid var(--border); border-radius:8px; background:#fff; font-size:14px; cursor:pointer; }
     .btn:hover { background:#eee; }
-    .wrap { display:grid; grid-template-columns: 320px 1fr; gap:20px; align-items:start; }
-    @media (max-width: 900px) { .wrap { grid-template-columns: 1fr; } }
-    img { width:100%; height:auto; border:1px solid #eee; border-radius:10px; }
-    dl { background:#fff; border:1px solid #e5e5e5; border-radius:10px; padding:16px; }
-    dt { font-weight:700; margin-top:10px; }
-    dd { margin:4px 0 10px; }
+
+    main { padding-top:12px; }
+
+    .card {
+      background:#fff; border:1px solid var(--border); border-radius:12px;
+      padding:16px; box-shadow:0 2px 10px rgba(0,0,0,.04);
+    }
+
+    .grid { display:grid; grid-template-columns: 240px 1fr; gap:16px; }
+    .img {
+      width:240px; height:240px; border-radius:12px; border:1px solid var(--border);
+      object-fit:cover; background:#f2f2f2;
+    }
+
+    dl { margin:0; }
+    dt { font-weight:600; margin-top:10px; }
+    dd { margin:4px 0 0 0; color:#222; }
+
+    h2 { margin:20px 0 10px; font-size:18px; }
+    .muted { color:var(--muted); font-size:14px; }
+
+    .pill {
+      display:inline-block; padding:3px 10px; border:1px solid var(--border);
+      border-radius:999px; font-size:12px; background:#fff; color:#333;
+    }
+
+    .req {
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:12px;
+      margin-top:10px;
+      background:#fff;
+    }
+    .req-top { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .req-name { font-weight:700; }
+    .req-meta { font-size:13px; color:var(--muted); margin-top:4px; }
+    .req-actions { margin-top:10px; display:flex; gap:8px; flex-wrap:wrap; }
   </style>
 </head>
-<body>
-  <a href="{% url 'home' %}" class="btn">← Back to Admin Home</a>
-  <h1 style="margin-top:12px">{{ dog.name }}</h1>
 
-  <div class="wrap">
+<body>
+  <header>
     <div>
-      {% if dog.image %}<img src="{{ dog.image.url }}" alt="{{ dog.name }}">{% endif %}
+      <h1>Dog Details</h1>
+      <div class="muted">Admin view</div>
     </div>
-    <div>
-      <dl>
-        <dt>Breed</dt><dd>{{ dog.breed }}</dd>
-        <dt>Age</dt><dd>{{ dog.age }}</dd>
-        <dt>Location</dt><dd>{{ dog.location }}</dd>
-        <dt>Activity level</dt><dd>{{ dog.activity_level|default:"—" }}</dd>
-        <dt>Training difficulty</dt><dd>{{ dog.training_difficulty|default:"—" }}</dd>
-        <dt>Coat & grooming</dt><dd>{{ dog.coat_grooming|default:"—" }}</dd>
-        <dt>Weight (kg)</dt><dd>{{ dog.weight_kg|default:"—" }}</dd>
-        <dt>Height (cm)</dt><dd>{{ dog.height_cm|default:"—" }}</dd>
-        <dt>Adopted</dt><dd>{{ dog.adopted|yesno:"Yes,No" }}</dd>
-        {% if dog.description %}
-          <dt>Description</dt><dd>{{ dog.description }}</dd>
+    <a class="btn" href="{% url 'home' %}">← Back</a>
+  </header>
+
+  <main>
+    <div class="card">
+      <div class="grid">
+        <div>
+          {% if dog.image %}
+            <img class="img" src="{{ dog.image.url }}" alt="{{ dog.name }}">
+          {% else %}
+            <img class="img" src="{% url 'dog_photo_bytes' dog.pk %}" alt="{{ dog.name }}">
+          {% endif %}
+        </div>
+
+        <div>
+          <dl>
+            <dt>Name</dt>
+            <dd>{{ dog.name }}</dd>
+
+            <dt>Breed</dt>
+            <dd>{{ dog.breed }}</dd>
+
+            <dt>Age</dt>
+            <dd>{{ dog.age }}</dd>
+
+            <dt>Location</dt>
+            <dd>{{ dog.location }}</dd>
+
+            <dt>Description</dt>
+            <dd>{{ dog.description }}</dd>
+          </dl>
+        </div>
+      </div>
+
+      <h2>
+        Adoption Requests
+        {% if pending_count %}
+          <span class="pill">{{ pending_count }} pending</span>
         {% endif %}
-      </dl>
-      <p>
-        <a href="{% url 'edit_dog' dog.pk %}" class="btn">Edit</a>
-        <a href="{% url 'delete_dog' dog.pk %}" class="btn">Delete</a>
-      </p>
+      </h2>
+
+      {% if apps %}
+        {% for ar in apps %}
+          <div class="req">
+            <div class="req-top">
+              <div>
+                <div class="req-name">{{ ar.user.username }}</div>
+                <div class="req-meta">
+                  Status: <b>{{ ar.status }}</b> • Submitted: {{ ar.created_at }}
+                  {% if ar.reviewed_at %} • Reviewed: {{ ar.reviewed_at }}{% endif %}
+                </div>
+
+                {% if ar.message %}
+                  <div style="margin-top:8px;">
+                    <b>Message:</b> {{ ar.message }}
+                  </div>
+                {% endif %}
+
+                {% if ar.user.client_profile %}
+                  <div style="margin-top:8px;">
+                    <div class="req-meta">
+                      <b>Full name:</b> {{ ar.user.client_profile.full_name }}<br>
+                      <b>Phone:</b> {{ ar.user.client_profile.phone }}<br>
+                      <b>County:</b> {{ ar.user.client_profile.county }}<br>
+                      <b>Area:</b> {{ ar.user.client_profile.area }}
+                    </div>
+
+                    {% if ar.user.client_profile.housing_document %}
+                      <div style="margin-top:8px;">
+                        <a class="btn" href="{{ ar.user.client_profile.housing_document.url }}" target="_blank">
+                          View housing document (PDF)
+                        </a>
+                      </div>
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </div>
+
+              <div>
+                <span class="pill">{{ ar.status }}</span>
+              </div>
+            </div>
+
+            <div class="req-actions">
+              {% if ar.status == "PENDING" %}
+                <form method="post" action="{% url 'review_adoption_request' ar.id 'accept' %}">
+                  {% csrf_token %}
+                  <button class="btn" type="submit">✅ Accept</button>
+                </form>
+
+                <form method="post" action="{% url 'review_adoption_request' ar.id 'reject' %}">
+                  {% csrf_token %}
+                  <button class="btn" type="submit">❌ Reject</button>
+                </form>
+              {% else %}
+                <span class="muted">This request has already been reviewed.</span>
+              {% endif %}
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="muted">No adoption requests yet for this dog.</p>
+      {% endif %}
+
     </div>
-  </div>
+  </main>
 </body>
 </html>

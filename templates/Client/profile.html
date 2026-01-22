@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Profile</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --border:#e9e9e9; --muted:#666; --bg:#fafafa; }
+    * { box-sizing:border-box; }
+    body { font-family:system-ui, Arial, sans-serif; margin:0; padding:24px; background:var(--bg); }
+    a { text-decoration:none; color:inherit; }
+
+    header { display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; }
+    header h1 { margin:0; font-size:24px; }
+    .subtitle { margin:4px 0 0; color:var(--muted); font-size:14px; }
+
+    .btn { display:inline-block; padding:8px 12px; border-radius:8px;
+           border:1px solid var(--border); background:#fff; font-size:14px; }
+    .btn:hover { background:#eee; }
+
+    .card { max-width:720px; margin:0 auto; background:#fff; border-radius:12px;
+            border:1px solid var(--border); padding:20px 24px; }
+
+    .field { margin-bottom:12px; }
+    .field label { display:block; font-size:13px; margin-bottom:4px; color:var(--muted); }
+    .field input { width:100%; padding:7px 9px; border-radius:6px;
+                   border:1px solid var(--border); font-size:14px; }
+
+    .row { display:flex; gap:12px; }
+    .row .field { flex:1; }
+
+    .actions { margin-top:16px; display:flex; justify-content:flex-end; }
+
+    .info-small { font-size:12px; color:var(--muted); margin-top:4px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>My Profile</h1>
+      <p class="subtitle">Manage your details used when adopting dogs.</p>
+    </div>
+    <div>
+      <a class="btn" href="{% url 'client_home' %}">← Back to dogs</a>
+    </div>
+  </header>
+
+  <section class="card">
+    <p class="subtitle" style="margin-top:0;">
+      Logged in as <strong>{{ user_obj.username }}</strong>{% if user_obj.email %} • {{ user_obj.email }}{% endif %}
+    </p>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="field">
+        <label for="{{ form.full_name.id_for_label }}">Your name</label>
+        {{ form.full_name }}
+      </div>
+
+      <div class="field">
+        <label for="{{ form.phone.id_for_label }}">Phone</label>
+        {{ form.phone }}
+      </div>
+
+      <div class="row">
+        <div class="field">
+          <label for="{{ form.county.id_for_label }}">County</label>
+          {{ form.county }}
+        </div>
+        <div class="field">
+          <label for="{{ form.area.id_for_label }}">Area</label>
+          {{ form.area }}
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="{{ form.housing_document.id_for_label }}">Housing document (PDF)</label>
+        {{ form.housing_document }}
+        <p class="info-small">
+          Upload a tenancy agreement, housing approval letter, or similar document (PDF only, max 5 MB).
+        </p>
+        {% if profile_obj.housing_document %}
+          <p class="info-small">
+            Current file:
+            <a href="{{ profile_obj.housing_document.url }}" target="_blank">
+              View uploaded PDF
+            </a>
+          </p>
+        {% endif %}
+      </div>
+
+      <div class="actions">
+        <button class="btn" type="submit">Save changes</button>
+      </div>
+    </form>
+  </section>
+</body>
+</html>

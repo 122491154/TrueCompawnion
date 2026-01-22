@@ -1,0 +1,12 @@
+use of AI
+
+AI has been used for bug fixes as well as help with Structuring  human written code for presentation but not ai generated
+
+File		            AI Tool    	  Prompt                                                                  noates
+
+client/home.html        chatGPT      set up the filters like done deal with them on the left with the        as the system is inspired by done deal
+                                     following filters Activity level: Location: Coat and grooming:          i want it to have a similer feel
+                                     Size (Weight and Height): Training difficulty: age
+
+client/dog_detail.html chatGPT       Show individual dog details in a clean two column layout.               was having issues with the dog details
+                                                                                                             going across insted of down

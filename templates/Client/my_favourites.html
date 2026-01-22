@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>My Favourite Dogs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root { --border:#e9e9e9; --muted:#666; }
+    * { box-sizing:border-box; }
+    body { font-family:system-ui, Arial, sans-serif; margin:0; padding:24px; background:#fafafa; }
+    a { text-decoration:none; color:inherit; }
+
+    header { display:flex; justify-content:space-between; align-items:center; padding-bottom:12px; }
+    header h1 { margin:0; font-size:24px; }
+    .btn { display:inline-block; padding:8px 12px; border:1px solid var(--border); border-radius:8px; background:#fff; font-size:14px; }
+    .btn:hover { background:#eee; }
+
+    .subtitle { font-size:14px; color:var(--muted); margin-top:4px; }
+
+    main { padding-top:12px; }
+
+    .cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(240px,1fr)); gap:16px; }
+    .card { background:#fff; border-radius:12px; border:1px solid var(--border); overflow:hidden; display:flex; flex-direction:column; }
+    .card-img { width:100%; height:200px; object-fit:cover; background:#f0f0f0; display:block; }
+    .card-body { padding:12px 14px 10px; flex:1; display:flex; flex-direction:column; gap:4px; }
+    .card-title { font-weight:600; }
+    .card-meta { font-size:13px; color:var(--muted); }
+    .pill-row { margin-top:4px; display:flex; flex-wrap:wrap; gap:4px; }
+    .pill { padding:2px 8px; border-radius:999px; border:1px solid var(--border); font-size:11px; color:#333; }
+
+    /* ✅ Application status pill */
+    .status-label { margin-top:8px; font-size:12px; color:var(--muted); }
+    .status-pill { display:inline-block; margin-top:4px; padding:2px 8px; border-radius:999px; border:1px solid var(--border); font-size:11px; font-weight:600; }
+
+    .empty { color:var(--muted); margin-top:16px; }
+    .empty a { color:#0070c9; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>My Favourite Dogs</h1>
+      <p class="subtitle">Dogs you have saved while browsing the site.</p>
+    </div>
+    <div>
+      <a class="btn" href="{% url 'client_home' %}">← Back to all dogs</a>
+    </div>
+  </header>
+
+  <main>
+    {% if dogs %}
+      <div class="cards">
+        {% for dog in dogs %}
+          <article class="card">
+            {% if dog.image %}
+              <a href="{% url 'client_dog_detail' dog.pk %}">
+                <img class="card-img" src="{{ dog.image.url }}" alt="{{ dog.name }}" />
+              </a>
+            {% else %}
+              <a href="{% url 'client_dog_detail' dog.pk %}">
+                <div class="card-img"></div>
+              </a>
+            {% endif %}
+            <div class="card-body">
+              <div class="card-title">{{ dog.name }} – {{ dog.breed }}</div>
+              <div class="card-meta">
+                {{ dog.age }} year{% if dog.age != 1 %}s{% endif %} • {{ dog.location }}
+              </div>
+              <div class="pill-row">
+                {% if dog.activity_level %}<span class="pill">{{ dog.activity_level }} activity</span>{% endif %}
+                {% if dog.training_difficulty %}<span class="pill">{{ dog.training_difficulty }}</span>{% endif %}
+                {% if dog.coat_grooming %}<span class="pill">{{ dog.coat_grooming }} grooming</span>{% endif %}
+              </div>
+
+              <!-- ✅ Added: application status (with safe fallback) -->
+              <div class="status-label">Application status</div>
+              <span class="status-pill">
+                {% if dog.application_status %}{{ dog.application_status }}{% else %}No application{% endif %}
+              </span>
+
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="empty">
+        You haven't favourited any dogs yet.
+        Browse <a href="{% url 'client_home' %}">all dogs</a> to get started.
+      </p>
+    {% endif %}
+  </main>
+</body>
+</html>
